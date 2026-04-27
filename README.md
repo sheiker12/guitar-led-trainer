@@ -11,18 +11,8 @@
 
 ## Скрипты
 
-- music_gui_working.py - GUI программа
-- add_song.sh - добавление произведений
-- quick_add.sh - быстрое добавление
-
-## Быстрый старт
-
-1. Создание базы:
-   sqlite3 guitar.db < init_db.sql
-
-2. Запуск GUI:
-   python3 music_gui_working.py
-
+- easy_gui.py, very_easy_gui.sh, medium_gui.py  - GUI программы
+- guitar-led-trainer.db - База данных
 ## Структура БД
 
 Произведения -> Аппликатуры -> Квадраты -> Аккорды
