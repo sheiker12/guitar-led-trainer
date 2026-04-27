@@ -20,3 +20,5 @@
 ## Автор
 
 sheiker12
+Max04098
+Pavel
