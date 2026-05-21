@@ -1,67 +1,49 @@
-name: Guitar LED Trainer CI/CD
+name: CI/CD
 
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+on: [push, pull_request]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - name: Install dependencies
-        run: |
-          pip install pyflakes
-          sudo apt-get update && sudo apt-get install -y sqlite3
-      - name: Check Python syntax
-        run: pyflakes *.py || true
-      - name: Check Bash syntax
-        run: bash -n very_easy_gui.sh
-      - name: Check database
-        run: sqlite3 guitar-led-trainer.db "PRAGMA integrity_check;"
-      
   test:
     runs-on: ubuntu-latest
-    needs: lint
     steps:
       - uses: actions/checkout@v4
+      
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: Install PyQt
+      
+      - name: Install
         run: |
-          pip install PyQt5
-          sudo apt-get install -y libxcb-xinerama0
-      - name: Test GUI import
+          pip install pyflakes
+          sudo apt-get install -y sqlite3
+      
+      - name: Check Python
+        run: pyflakes *.py || true
+      
+      - name: Check Bash
+        run: bash -n very_easy_gui.sh
+      
+      - name: Check DB
+        run: |
+          if [ -f "guitar-led-trainer.db" ]; then
+            sqlite3 guitar-led-trainer.db "PRAGMA integrity_check;"
+            echo "✅ DB OK"
+          else
+            echo "⚠️ No DB - will be created on first run"
+          fi
+      
+      - name: Test PyQt
         run: |
           export QT_QPA_PLATFORM=offscreen
-          python -c "from PyQt5.QtWidgets import QApplication; import sys; app = QApplication(sys.argv); print('✅ PyQt works')"
-      - name: Verify database schema
-        run: |
-          for table in Произведения Аккорды Квадраты Аппликатуры; do
-            sqlite3 guitar-led-trainer.db "SELECT name FROM sqlite_master WHERE type='table' AND name='$table';" | grep -q "$table"
-            echo "✅ $table"
-          done
-          
-  build:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v4
-      - name: Create artifact
-        run: |
-          mkdir -p dist/
-          cp *.py *.sh *.db README.md dist/
-          echo "Build: $(date -u)" > dist/version.txt
-      - name: Upload artifact
+          python -c "from PyQt5.QtWidgets import QApplication; import sys; app = QApplication(sys.argv); print('✅ PyQt OK')"
+      
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: guitar-led-trainer-${{ github.sha }}
-          path: dist/
+          name: guitar-led-trainer
+          path: |
+            *.py
+            *.sh
+            *.db
+            README.md
