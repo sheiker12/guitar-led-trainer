@@ -13,32 +13,33 @@ jobs:
         with:
           python-version: '3.10'
       
-      - name: Install
+      - name: Install dependencies
         run: |
-          pip install pyflakes
-          sudo apt-get install -y sqlite3
+          pip install pyflakes PyQt5
+          sudo apt-get update
+          sudo apt-get install -y sqlite3 xvfb
       
-      - name: Check Python
+      - name: Check Python syntax
         run: pyflakes *.py || true
       
-      - name: Check Bash
+      - name: Check Bash syntax
         run: bash -n very_easy_gui.sh
       
-      - name: Check DB
+      - name: Check database
         run: |
           if [ -f "guitar-led-trainer.db" ]; then
             sqlite3 guitar-led-trainer.db "PRAGMA integrity_check;"
             echo "✅ DB OK"
           else
-            echo "⚠️ No DB - will be created on first run"
+            echo "⚠️ No DB file"
           fi
       
       - name: Test PyQt
         run: |
           export QT_QPA_PLATFORM=offscreen
-          python -c "from PyQt5.QtWidgets import QApplication; import sys; app = QApplication(sys.argv); print('✅ PyQt OK')"
+          python -c "from PyQt5.QtWidgets import QApplication; import sys; app = QApplication(sys.argv); print('✅ PyQt works')"
       
-      - name: Upload
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: guitar-led-trainer
